@@ -1,5 +1,6 @@
 var crypto = require('crypto');
 var User = require('../models/user.js');
+var Publish = require('../models/publish.js');
 
 // 路由回调
 var routeFun = {
@@ -94,12 +95,38 @@ var routeFun = {
 	},
 
 	getPublish: function(req, res, next){
-		res.render('publish', {});
+		res.render('publish', {title: '发表',
+								user: req.session.user,
+								success: req.flash('success').toString(),
+								error: req.flash('error').toString()
+							});
 	},
 
+	// 
 	postPublish: function(req, res, next){
+		var author = req.session.user.name,
+			title = req.body.title,
+			article = req.body.article;
 
-	},
+		var blogPublish = new Publish({
+			author: author,
+			title: req.body.title,
+			article: req.body.article 
+		});
+
+		blogPublish.save(function(err){
+
+			if(err){
+				req.flash('error', '保存博客失败');
+				return req.redirect('/');
+			};
+			
+			req.flash('success', '发表成功');
+			res.redirect('/');
+			
+		});		
+	}
+	/* routeFun end */
 };
 
 module.exports = routeFun;

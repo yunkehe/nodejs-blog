@@ -1,3 +1,13 @@
 <%- include header %>
 这是主页
+<% blogs.forEach(function(v){ %>
+	<div class="article-box">
+	<h2><a href="#"><%= v.title %></a></h2>
+	<p class="info">
+		<span>作者：</span><a href="#"><%= v.author %></a>|
+		<span>时间：</span><span><%= v.time.localString %></span>
+	</p>
+	<p><%- v.article %></p>
+	</div>
+<% }) %>
 <%- include footer %>
