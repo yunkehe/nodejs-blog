@@ -28,7 +28,9 @@ var router = function(app){
 
 		app.post('/'+routeName, privilege[privilege.route[routeName]]);
 		app.post('/'+routeName, routeFun['post'+route]);
+
 	});
+
 };
 
 module.exports = router;

@@ -1,12 +1,16 @@
 var crypto = require('crypto');
 var User = require('../models/user.js');
 var Publish = require('../models/publish.js');
+var multerUtil = require('../helper/multerUtil.js');
+
+// 存储控制
+var upload = multerUtil.array('photos', 4);
 
 // 路由回调
 var routeFun = {
 
 	// 路由名称
-	names: ['Login', 'Register', 'Logout', 'Publish'],
+	names: ['Login', 'Register', 'Logout', 'Publish', 'Upload'],
 
 	getLogin : function(req, res, next){
 		res.render('login', {title: '登陆',
@@ -94,6 +98,7 @@ var routeFun = {
 
 	},
 
+	// 发布文章页面
 	getPublish: function(req, res, next){
 		res.render('publish', {title: '发表',
 								user: req.session.user,
@@ -102,7 +107,7 @@ var routeFun = {
 							});
 	},
 
-	// 
+	// 发布文章
 	postPublish: function(req, res, next){
 		var author = req.session.user.name,
 			title = req.body.title,
@@ -125,7 +130,30 @@ var routeFun = {
 			res.redirect('/');
 			
 		});		
+	},
+
+	// upload页面
+	getUpload: function(req, res, next){
+
+		res.render('upload', {title: '上传',
+							user: req.session.user,
+							success: req.flash('success').toString(),
+							error: req.flash('error').toString()
+						});
+	},
+
+	// 上传api
+	postUpload: function(req, res, next){
+		
+		upload(req, res, function(err){
+			if(err) return console.log(err);
+
+			req.flash('success', '上传成功');
+			res.redirect('/');
+
+		})
 	}
+
 	/* routeFun end */
 };
 

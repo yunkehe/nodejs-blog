@@ -1,10 +1,12 @@
+// 页面访问权限控制
 var privilege = {
 
 	route: {
 		'login': 'checkLogin',
 		'register': 'checkLogin',
 		'publish': 'checkNotLogin',
-		'logout': 'checkNotLogin'
+		'logout': 'checkNotLogin',
+		'upload': 'checkNotLogin'
 	},
 	
 	// 未登陆
