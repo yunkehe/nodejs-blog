@@ -2,6 +2,7 @@ var crypto = require('crypto');
 var User = require('../models/user.js');
 var Publish = require('../models/publish.js');
 var multerUtil = require('../helper/multerUtil.js');
+var _ = require('underscore');
 
 // 存储控制
 var upload = multerUtil.array('photos', 4);
@@ -12,6 +13,23 @@ var routeFun = {
 	// 路由名称
 	names: ['Login', 'Register', 'Logout', 'Publish', 'Upload'],
 
+	// 首页
+	index: function(req, res, next){
+
+		Publish.getAll(null, function (err, blogs) {
+			if(err) blogs = [];
+			// renderIndex(blogs);
+			res.render('index', { title: '这是主页', 
+								user: req.session.user,
+								success: req.flash('success').toString(),
+								error: req.flash('error').toString(),
+								blogs: blogs
+							});
+		});
+	},
+
+	
+	// 登陆页
 	getLogin : function(req, res, next){
 		res.render('login', {title: '登陆',
 							user: req.session.user,
@@ -152,8 +170,68 @@ var routeFun = {
 			res.redirect('/');
 
 		})
-	}
+	},
 
+
+	// 用户页
+	user: function(req, res, next){
+
+		var author;
+
+		if(req.params.author){
+			// console.log('--------------------------req.params.author', req.params.author);
+			author = req.params.author;
+
+			Publish.getAll(author, function(err, blogs){
+				if(err) blog = [];
+				res.render('user', { title: author + '的主页', 
+									user: req.session.user,
+									success: req.flash('success').toString(),
+									error: req.flash('error').toString(),
+									blogs: blogs
+								});
+			});
+
+		}else{
+			res.redirect('/');
+		}
+	},
+
+	// 文章頁
+	blog: function(req, res, next){
+		var query = {
+			author: req.params.author,
+			title: req.params.title,
+			localString: req.params.localString
+		};
+
+		Publish.getOne(query, function(err, blog){
+			if(err){
+				req.flash('error', err);
+				return res.redirect('/');
+			}
+
+			// console.log('--------------------findOne blog', blog._id);
+			res.render('blog', {
+				title: '博客首页',
+				user: req.session.user,
+				success: req.flash('success').toString(),
+				error: req.flash('error').toString(),
+				blog: blog
+			});
+
+		})
+	},
+
+	// 编辑
+	edit: function(req, res, next){
+		
+	},
+
+	// 刪除
+	delete: function(req, res, next){
+
+	}
 	/* routeFun end */
 };
 
