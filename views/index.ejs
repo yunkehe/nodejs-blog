@@ -1,7 +1,7 @@
 <%- include header %>
 <% blogs.forEach(function(v){ %>
 	<div class="article-box">
-	<h2><a href="/u/<%=v.author%>/<%=v.title%>/<%=v.time.localString%>"><%= v.title %></a></h2>
+	<h2><a href="/u/<%=v.author%>/<%=v._id%>"><%= v.title %></a></h2>
 	<p class="info">
 		<span>作者：</span><a href="/u/<%= v.author %>"><%= v.author %></a>|
 		<span>时间：</span><span><%= v.time.localString %></span>

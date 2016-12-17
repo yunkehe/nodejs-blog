@@ -1,7 +1,7 @@
 <%- include header %>
 
 	<div class="article-box">
-	<h2><a href="/u/<%=blog.author%>/<%=blog.title%>/<%=blog.time.localString%>"><%= blog.title %></a></h2>
+	<h2><a href="/u/<%=blog.author%>/<%=blog._id%>"><%= blog.title %></a></h2>
 	<p class="info">
 		<span>作者：</span><a href="#"><%= blog.author %></a>|
 		<span>时间：</span><span><%= blog.time.localString %></span>

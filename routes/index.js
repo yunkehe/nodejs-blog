@@ -21,11 +21,15 @@ var router = function(app){
 
 	// 跳转到我的博客
 	app.get('/u/:author', routeFun.user);
-	app.get('/u/:author/:title/:localString', routeFun.blog);
+	app.get('/u/:author/:id', routeFun.blog);
 
 	// 编辑
-	app.get('/edit/:author/:id', routeFun.edit);
-	app.get('/delete/:author/:id', routeFun.delete);
+	app.get('/edit/:author/:id', routeFun.getEdit);
+	app.post('/edit/:author/:id', routeFun.postEdit);
+
+	// 删除
+	app.get('/remove/:author/:id', routeFun.remove);
+
 
 };
 

@@ -1,5 +1,6 @@
 var mongodb = require('./db.js');
 var markdown = require('markdown').markdown;
+var ObjectId = require('mongodb').ObjectId;
 
 // 发表数据
 function Publish(data) {
@@ -89,22 +90,85 @@ Publish.getOne = function(params, callback){
 				mongodb.close();
 				return callback(err);
 			}
+			
+			var query = {};
 
-			var query = {
-				author: params.author || '',
-				title: params.title || '',
-				'time.localString': params.localString || ''
-			};
+			// 单独用_id查询
+			if(params.id){
+				query._id = ObjectId(params.id);
+			}else{
+				query = {
+					author: params.author || '',
+					title: params.title || '',
+					'time.localString': params.localString || '',
+				};
+			}
+			// if(params.id) query._id = ObjectId("5854a2b346736725e0f5143a");
+			if(params.id) query._id = ObjectId(params.id);
 
 			// 查询一篇博客
 			collection.findOne(query, function(err, blog){
 				mongodb.close();
 				if(err) return callback(err);
+				blog.articleS = blog.article;
 				blog.article = markdown.toHTML(blog.article);
 				callback(null, blog);
 			})
 		})
 	})
 }
+
+// 保存修改
+Publish.update = function(params, callback){
+	mongodb.open(function(err, db){
+		if(err) return callback(err);
+
+		db.collection('blogs', function(err, collection){
+			if(err){
+				mongodb.close();
+				return callback(err);
+			}
+
+			var query = {
+				_id: ObjectId(params.id)
+			};
+
+			var updateParams = {
+				article: params.article
+			};
+
+			collection.update(query, {$set: updateParams}, function(err){
+				mongodb.close();
+				if(err) return callback(err);
+				callback(null); 
+			});
+		})
+	})
+}
+
+// 删除博客
+Publish.remove = function(params, callback){
+	mongodb.open(function(err, db){
+		if(err) return callback(err);
+
+		db.collection('blogs', function(err, collection){
+			if(err){
+				mongodb.close();
+				return callback(err);
+			}
+
+			collection.remove({
+				_id: ObjectId(params.id)
+			}, {w: 1}, function(err){
+				mongodb.close();
+				if(err) return callback(err);
+				callback(null);
+			});
+
+		});
+	});
+};
+
+
 
 module.exports = Publish;

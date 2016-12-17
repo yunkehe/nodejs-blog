@@ -183,7 +183,7 @@ var routeFun = {
 			author = req.params.author;
 
 			Publish.getAll(author, function(err, blogs){
-				if(err) blog = [];
+				if(err) blogs = [];
 				res.render('user', { title: author + '的主页', 
 									user: req.session.user,
 									success: req.flash('success').toString(),
@@ -199,13 +199,8 @@ var routeFun = {
 
 	// 文章頁
 	blog: function(req, res, next){
-		var query = {
-			author: req.params.author,
-			title: req.params.title,
-			localString: req.params.localString
-		};
 
-		Publish.getOne(query, function(err, blog){
+		Publish.getOne(req.params, function(err, blog){
 			if(err){
 				req.flash('error', err);
 				return res.redirect('/');
@@ -223,14 +218,58 @@ var routeFun = {
 		})
 	},
 
-	// 编辑
-	edit: function(req, res, next){
-		
+	// render编辑页面
+	getEdit: function(req, res, next){
+
+		Publish.getOne(req.params, function(err, blog){
+			if(err){
+				blog = {};
+				req.flash('error', '读取博客数据失败！');
+			};
+
+			res.render('edit', {
+				title: '编辑博客',
+				user: req.session.user,
+				success: req.flash('success').toString(),
+				error: req.flash('error').toString(),
+				blog: blog
+			});
+
+		});	
+	},
+
+	// 编辑博客 保存修改
+	postEdit: function(req, res, next){
+		var params = {
+			id: req.params.id,
+			article: req.body.article
+		};
+
+		console.log()
+		var url = '/u/'+req.params.author+'/'+req.params.id;
+
+		Publish.update(params, function(err){
+			if(err){
+				req.flash('error', '修改失败！');
+			}
+			req.flash('success', '修改成功！');
+			
+			// 返回到详情页
+			res.redirect(url);
+		})
 	},
 
 	// 刪除
-	delete: function(req, res, next){
+	remove: function(req, res, next){
+		Publish.remove(req.params, function(err){
+			if(err){
+				req.flash('error', '删除失败!');
+				res.redirect('back');
+			}
 
+			req.flash('success', '删除成功!');
+			res.redirect('/');
+		});
 	}
 	/* routeFun end */
 };
