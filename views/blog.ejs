@@ -1,0 +1,16 @@
+<%- include header %>
+	<div class="article-box">
+	<% if( user && user.name === blog.author){%>
+	<p>
+		<a href="/edit/<%= blog.author %>/<%= blog._id %>" class="edit">编辑</a>
+		<a href="/remove/<%= blog.author %>/<%= blog._id %>" class="edit">删除</a>
+	</p>
+	<% } %>
+	<h2><a href="/u/<%=blog.author%>/<%=blog.title%>/<%=blog.time.localString%>"><%= blog.title %></a></h2>
+	<p class="info">
+		<span>作者：</span><a href="/u/<%= blog.author %>"><%= blog.author %></a>|
+		<span>时间：</span><span><%= blog.time.localString %></span>
+	</p>
+	<p><%- blog.article %></p>
+	</div>
+<%- include footer %>
