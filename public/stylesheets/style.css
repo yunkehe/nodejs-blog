@@ -65,3 +65,27 @@ a {
 	color:#fff;
 	-webkit-transition: color .2s linear;
 }
+textarea{
+	margin: 10px 0;
+}
+/* 分页 */
+.next-page,
+.prev-page{
+	text-decoration: none;
+	padding: .5em 1em;
+	color: #ff0006;
+	font-weight: bold;
+}
+.prev-page{
+	float: left;
+}
+.next-page{
+	float: right;
+}
+.prev-page:hover,
+.next-page:hover{
+	text-decoration: none;
+	background-color: #ff0006;
+	color: #f9f9f9;
+	transition:color .2s linear;
+}

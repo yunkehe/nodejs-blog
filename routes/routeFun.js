@@ -1,8 +1,10 @@
 var crypto = require('crypto');
 var User = require('../models/user.js');
 var Publish = require('../models/publish.js');
+var Comment = require('../models/comment.js');
 var multerUtil = require('../helper/multerUtil.js');
 var _ = require('underscore');
+var setting = require('../settings.js');
 
 // 存储控制
 var upload = multerUtil.array('photos', 4);
@@ -15,15 +17,22 @@ var routeFun = {
 
 	// 首页
 	index: function(req, res, next){
+		var limit_page = setting.pagination.limit;
+		var page = req.query.p ? parseInt(req.query.p) : 1;
 
-		Publish.getAll(null, function (err, blogs) {
+		Publish.getPagination({
+			page: page
+		}, function (err, blogs, total) {
 			if(err) blogs = [];
 			// renderIndex(blogs);
 			res.render('index', { title: '这是主页', 
 								user: req.session.user,
 								success: req.flash('success').toString(),
 								error: req.flash('error').toString(),
-								blogs: blogs
+								blogs: blogs,
+								is_first_page: (page - 1) == 0,
+								is_last_page: (page - 1)*limit_page + blogs.length == total,
+								page: page
 							});
 		});
 	},
@@ -179,19 +188,27 @@ var routeFun = {
 		var author;
 
 		if(req.params.author){
-			// console.log('--------------------------req.params.author', req.params.author);
 			author = req.params.author;
+			
+			var limit_page = setting.pagination.limit;
+			var page = req.query.p ? parseInt(req.query.p) : 1;
 
-			Publish.getAll(author, function(err, blogs){
+			Publish.getPagination({
+				page: page,
+				author: author
+			}, function (err, blogs, total) {
 				if(err) blogs = [];
+				// renderIndex(blogs);
 				res.render('user', { title: author + '的主页', 
 									user: req.session.user,
 									success: req.flash('success').toString(),
 									error: req.flash('error').toString(),
-									blogs: blogs
+									blogs: blogs,
+									is_first_page: (page - 1) == 0,
+									is_last_page: (page - 1)*limit_page + blogs.length == total,
+									page: page
 								});
 			});
-
 		}else{
 			res.redirect('/');
 		}
@@ -206,15 +223,42 @@ var routeFun = {
 				return res.redirect('/');
 			}
 
+			if(!blog.comments) blog.comments = [];
 			// console.log('--------------------findOne blog', blog._id);
 			res.render('blog', {
-				title: '博客首页',
+				title: '文章详情',
 				user: req.session.user,
 				success: req.flash('success').toString(),
 				error: req.flash('error').toString(),
 				blog: blog
 			});
 
+		})
+	},
+
+	// 文章页可以留言
+	comment: function(req, res, next){
+
+		var p_comment = {
+			name: req.body.name,
+			website: req.body.website,
+			content: req.body.content
+		};
+
+		var m_comment = new Comment({
+			id: req.params.id,
+			comment: p_comment
+		});
+
+		m_comment.save(function(err){
+			console.log('=========================是否保存成功', err)
+			if(err){
+				req.flash('error', '保存失败！');
+				return res.redirect('back');
+			}
+
+			req.flash('success', '保存成功！');
+			res.redirect('back');
 		})
 	},
 
@@ -275,3 +319,6 @@ var routeFun = {
 };
 
 module.exports = routeFun;
+
+
+

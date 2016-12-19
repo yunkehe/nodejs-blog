@@ -1,6 +1,7 @@
 var mongodb = require('./db.js');
 var markdown = require('markdown').markdown;
 var ObjectId = require('mongodb').ObjectId;
+var setting = require('../settings.js');
 
 // 发表数据
 function Publish(data) {
@@ -13,7 +14,8 @@ Publish.prototype.save = function(callback){
 	var blog = {
 		author: this.author,
 		title: this.title,
-		article: this.article
+		article: this.article,
+		comments: []
 	};
 
 	// 存储时间
@@ -118,6 +120,46 @@ Publish.getOne = function(params, callback){
 	})
 }
 
+// 分页
+Publish.getPagination = function(params, callback){
+	var limit_page = setting.pagination.limit;
+	var params = params || {};
+
+	mongodb.open(function(err, db){
+		if(err) return callback(err);
+
+		db.collection('blogs', function(err, collection){
+			if(err){
+				mongodb.close();
+				return callback(err);
+			}
+
+			var query = {};
+
+			if(params.author) query.author = params.author;
+			// count查询总记录条数
+			collection.count(query, function(err, total){
+
+				collection.find(query, {
+					skip: (params.page-1)*limit_page,
+					limit: limit_page
+				}).sort({
+					time: -1
+				}).toArray(function(err, blogs){
+					mongodb.close();
+					if(err) return callback(err);
+					
+					blogs.forEach(function(v){
+						v.articleS = v.article;
+						v.article = markdown.toHTML(v.article);
+					});
+					// 传回文档详情和总页数
+					callback(null, blogs, total);
+				});
+			});
+		});
+	})
+}
 // 保存修改
 Publish.update = function(params, callback){
 	mongodb.open(function(err, db){

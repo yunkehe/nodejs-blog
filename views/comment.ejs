@@ -1,0 +1,23 @@
+<br>
+<hr>
+<% blog.comments.forEach(function(comment){  %>
+<p>
+	<!-- <a href="<%= comment.website %>"><%= comment.name %></a> -->
+	<em><%= comment.name %></em>
+	<span>回复于：<%= comment.localString %></span>
+</p>
+<p><%= comment.content %></p>
+<% }) %>
+<br>
+<form method="post">
+<textarea name="content" cols="52" rows="5"></textarea>
+<br>
+<% if(user){ %>
+	<label for="name"><span>姓名:</span><input type="text" name="name" value="<%= user.name %>" /></label>
+	<!-- <label for="website">网址：<input type="text" name="website" value="/u/<%= user.name %>" /></label> -->
+<% }else{ %>
+	<label for="name"><span>姓名:</span><input type="text" name="name" /></label>
+	<!-- <label for="website">网址：<input type="text" name="website" value="http://" /></label> -->
+<% } %>
+<input type="submit" value="留言" />
+</form>

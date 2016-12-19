@@ -17,11 +17,15 @@ var router = function(app){
 		app.post('/'+routeName, privilege[privilege.route[routeName]]);
 		app.post('/'+routeName, routeFun['post'+route]);
 
+
 	});
 
 	// 跳转到我的博客
 	app.get('/u/:author', routeFun.user);
 	app.get('/u/:author/:id', routeFun.blog);
+
+	// 留言
+	app.post('/u/:author/:id', routeFun.comment);
 
 	// 编辑
 	app.get('/edit/:author/:id', routeFun.getEdit);
@@ -29,7 +33,6 @@ var router = function(app){
 
 	// 删除
 	app.get('/remove/:author/:id', routeFun.remove);
-
 
 };
 
