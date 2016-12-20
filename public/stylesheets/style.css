@@ -5,6 +5,10 @@ body{
 	padding: 0 2em;
 	font: 14px "KaiTi", "Microsoft Yahei", "Lucida Grande", Helvetica, Arial, sans-serif;
 }
+ul{
+	list-style: none;
+	padding: 0;
+}
 p{
 	line-height: 24px;
 	margin: 1em 0;
@@ -43,6 +47,9 @@ article a{
 article a:hover{
 	color: #333;
 	text-decoration: underline;
+}
+a:hover{
+	text-decoration: none;
 }
 .info{
 	font-size: 14px;
@@ -88,4 +95,24 @@ textarea{
 	background-color: #ff0006;
 	color: #f9f9f9;
 	transition:color .2s linear;
+}
+/* 存档 */
+.archive{
+	list-style: none;
+	line-height: 28px;
+}
+.archive a{
+	margin: 0 5px;
+}
+/* 标签页 */
+.tags{
+	padding: 0;
+}
+.tags li{
+	margin: 0 .5em;
+	float: left;
+	border-radius: 10px;
+	border-radius: .2em .5em;
+	background: #ebf5f3;
+	background-size: 100% 50%;
 }

@@ -8,14 +8,18 @@ function Publish(data) {
 	this.author = data.author;
 	this.title = data.title;
 	this.article = data.article;
+	this.tags = data.tags;
+
 };
 
 Publish.prototype.save = function(callback){
+	var tags = this.tags;
 	var blog = {
 		author: this.author,
 		title: this.title,
 		article: this.article,
-		comments: []
+		comments: [],
+		tags: this.tags
 	};
 
 	// 存储时间
@@ -82,6 +86,34 @@ Publish.getAll = function(author, callback){
 	});
 };
 
+// 获取特定标签的所有博客
+Publish.getBlogsByTags = function(tags, callback){
+	mongodb.open(function(err, db){
+		if(err) return callback(err);
+
+		db.collection('blogs', function(err, collection){
+			if(err){
+				mongodb.close();
+				return callback(err);
+			}
+
+			collection.find({
+				tags: {$all: tags}
+			}, {
+				title: 1,
+				author: 1,
+				time: 1
+			}).sort({
+				time: -1
+			}).toArray(function(err, blogs){
+				mongodb.close();
+				if(err) return callback(err);
+				callback(null, blogs);
+			})
+		});
+	});
+};
+
 // 获取一篇博客
 Publish.getOne = function(params, callback){
 	mongodb.open(function(err, db){
@@ -110,8 +142,19 @@ Publish.getOne = function(params, callback){
 
 			// 查询一篇博客
 			collection.findOne(query, function(err, blog){
-				mongodb.close();
-				if(err) return callback(err);
+				if(err){
+					mongodb.close();
+					return callback(err);	
+				} 
+
+				// 每访问一次增加一次pv统计
+				collection.update({_id: query._id}, {
+					$inc: {pv: 1}
+				}, function(err){
+					mongodb.close();
+					if(err) return callback(err);
+				});
+
 				blog.articleS = blog.article;
 				blog.article = markdown.toHTML(blog.article);
 				callback(null, blog);
@@ -137,6 +180,7 @@ Publish.getPagination = function(params, callback){
 			var query = {};
 
 			if(params.author) query.author = params.author;
+			if(params.tags) query.tags = params.tags;
 			// count查询总记录条数
 			collection.count(query, function(err, total){
 
@@ -160,6 +204,7 @@ Publish.getPagination = function(params, callback){
 		});
 	})
 }
+
 // 保存修改
 Publish.update = function(params, callback){
 	mongodb.open(function(err, db){
@@ -176,7 +221,8 @@ Publish.update = function(params, callback){
 			};
 
 			var updateParams = {
-				article: params.article
+				article: params.article,
+				tags: params.tags
 			};
 
 			collection.update(query, {$set: updateParams}, function(err){
@@ -211,6 +257,52 @@ Publish.remove = function(params, callback){
 	});
 };
 
+// 存档
+Publish.getArchive = function(callback){
+	mongodb.open(function(err, db){
+		if(err) return callback(err);
+
+		db.collection('blogs', function(err, collection){
+			if(err){
+				mongodb.close();
+				return callback(err);
+			}
+
+			collection.find({}, {
+				author: 1,
+				time: 1,
+				title: 1
+			}).sort({
+				time: -1
+			}).toArray(function(err, docs){
+				mongodb.close();
+				if(err) return callback(err);
+				callback(null, docs);
+			});
+		});
+	});
+};
+
+// 获取标签
+Publish.getTags = function(callback){
+	mongodb.open(function(err, db){
+		if(err) return callback(err);
+
+		db.collection('blogs', function(err, collection){
+			if(err){
+				mongodb.close();
+				return callback(err);
+			}
+
+			// 找出给定键的所有不同值
+			collection.distinct('tags', function(err, tags){
+				mongodb.close();
+				if(err) return callback(err);
+				callback(null, tags);
+			});
+		})
+	})
+}
 
 
 module.exports = Publish;

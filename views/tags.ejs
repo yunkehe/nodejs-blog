@@ -1,0 +1,12 @@
+<%- include header %>
+<% if(tags.length){ %>
+<ul class="tags">
+	<% tags.forEach(function(tag){ %>
+		<li><a href="/tags/<%=tag%>"><%= tag %></a></li>
+	<% }) %>
+</ul>
+<% }else{ %>
+	<p>没有标签！</p>
+<% } %>
+
+<%- include footer%>

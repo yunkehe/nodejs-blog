@@ -6,10 +6,12 @@
 		<a href="/remove/<%= blog.author %>/<%= blog._id %>" class="edit">删除</a>
 	</p>
 	<% } %>
-	<h2><a href="/u/<%=blog.author%>/<%=blog.title%>/<%=blog.time.localString%>"><%= blog.title %></a></h2>
+	<h2><a href="#"><%= blog.title %></a></h2>
 	<p class="info">
-		<span>作者：</span><a href="/u/<%= blog.author %>"><%= blog.author %></a>|
-		<span>时间：</span><span><%= blog.time.localString %></span>
+		<span>作者：</span><a href="/u/<%= blog.author %>"><%= blog.author %></a> |
+		<span>时间：</span><span><%= blog.time.localString %></span> |
+		<span>阅读：</span><em><%= blog.pv || 0 %></em> |
+		<span>留言：</span><em><%= blog.comments.length || 0 %></em>
 	</p>
 	<p><%- blog.article %></p>
 	</div>

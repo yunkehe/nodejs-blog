@@ -34,6 +34,15 @@ var router = function(app){
 	// 删除
 	app.get('/remove/:author/:id', routeFun.remove);
 
+	// 存档
+	app.get('/archive', routeFun.archive);
+
+	// 标签页
+	app.get('/tags', routeFun.tags);
+
+	// 包含该标签的所有博客
+	app.get('/tags/:tag', routeFun.tagBlogs)
+
 };
 
 module.exports = router;

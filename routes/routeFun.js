@@ -136,14 +136,13 @@ var routeFun = {
 
 	// 发布文章
 	postPublish: function(req, res, next){
-		var author = req.session.user.name,
-			title = req.body.title,
-			article = req.body.article;
+		var tags = req.body.tags ? req.body.tags.split(',').slice(0, 3) : [];
 
 		var blogPublish = new Publish({
-			author: author,
+			author: req.session.user.name,
 			title: req.body.title,
-			article: req.body.article 
+			article: req.body.article,
+			tags: tags
 		});
 
 		blogPublish.save(function(err){
@@ -233,6 +232,9 @@ var routeFun = {
 				blog: blog
 			});
 
+			// 访问该页一次则增加一次pv统计
+			// Publish.update
+
 		})
 	},
 
@@ -286,10 +288,10 @@ var routeFun = {
 	postEdit: function(req, res, next){
 		var params = {
 			id: req.params.id,
-			article: req.body.article
+			article: req.body.article,
+			tags: req.body.tags ? req.body.tags.split(',') : []
 		};
 
-		console.log()
 		var url = '/u/'+req.params.author+'/'+req.params.id;
 
 		Publish.update(params, function(err){
@@ -314,6 +316,63 @@ var routeFun = {
 			req.flash('success', '删除成功!');
 			res.redirect('/');
 		});
+	},
+
+	// 存档
+	archive: function(req, res, next){
+		Publish.getArchive(function(err, docs){
+			if(err){
+				req.flash('error', '读取存档失败！');
+				var docs = [];
+			}
+
+			res.render('archive', {
+				title: '存档首页',
+				success: req.flash('success').toString(),
+				error: req.flash('error').toString(),
+				user: req.session.user,
+				docs: docs
+			});
+		});
+	},
+
+	// 标签页
+	tags: function(req, res, next){
+		Publish.getTags(function(err, tags){
+			if(err){
+				req.flash('error', '读取标签失败！');
+				var tags = [];
+			}
+			// res.flash('success', 'success!');
+			res.render('tags', {
+				title: '所有标签',
+				success: req.flash('success').toString(),
+				error: req.flash('error').toString(),
+				user: req.session.user,
+				tags: tags
+			});
+		});
+	},
+
+	tagBlogs: function(req, res, next){
+		var tags = [req.params.tag];
+
+		Publish.getBlogsByTags(tags, function(err, blogs){
+			if(err){
+				req.flash('error', '读取指定博客失败！');
+				return res.redirect('back');
+			}
+
+			req.flash('success', '读取博客成功！');
+			res.render('blogs_by_tags', {
+				title: '所有博客',
+				success: req.flash('success').toString(),
+				error: req.flash('error').toString(),
+				user: req.session.user,
+				blogs: blogs
+			})
+
+		})
 	}
 	/* routeFun end */
 };
