@@ -9,11 +9,34 @@ var setting = require('../settings.js');
 // 存储控制
 var upload = multerUtil.array('photos', 4);
 
+var routeCallback = {
+	'renderDocs': function(req, res, params){
+		var views = params.views,
+			title = params.title;
+
+		// 返回回调
+		return function(err, data){
+			if(err){
+				req.flash('error', '读取数据失败！');
+				return res.redirect('back');
+			}
+			// console.log('=================================data', data);
+			req.flash('success', '读取数据成功！');
+			res.render(views, {
+				title: params.title,
+				data: data,
+				success: req.flash('success').toString(),
+				error: req.flash('error').toString(),
+				user: req.session.user
+			})
+		}
+	}
+}
 // 路由回调
 var routeFun = {
 
 	// 路由名称
-	names: ['Login', 'Register', 'Logout', 'Publish', 'Upload'],
+	names: ['Login', 'Register', 'Logout', 'Publish', 'Upload', 'Archive', 'Tags', 'Search'],
 
 	// 首页
 	index: function(req, res, next){
@@ -142,7 +165,8 @@ var routeFun = {
 			author: req.session.user.name,
 			title: req.body.title,
 			article: req.body.article,
-			tags: tags
+			tags: tags,
+			head: req.session.user.head
 		});
 
 		blogPublish.save(function(err){
@@ -180,7 +204,6 @@ var routeFun = {
 		})
 	},
 
-
 	// 用户页
 	user: function(req, res, next){
 
@@ -215,27 +238,12 @@ var routeFun = {
 
 	// 文章頁
 	blog: function(req, res, next){
+		var cb = routeCallback.renderDocs(req, res, {
+			title: '文章详情',
+			views: 'blog'
+		});
 
-		Publish.getOne(req.params, function(err, blog){
-			if(err){
-				req.flash('error', err);
-				return res.redirect('/');
-			}
-
-			if(!blog.comments) blog.comments = [];
-			// console.log('--------------------findOne blog', blog._id);
-			res.render('blog', {
-				title: '文章详情',
-				user: req.session.user,
-				success: req.flash('success').toString(),
-				error: req.flash('error').toString(),
-				blog: blog
-			});
-
-			// 访问该页一次则增加一次pv统计
-			// Publish.update
-
-		})
+		Publish.getOne(req.params, cb);
 	},
 
 	// 文章页可以留言
@@ -319,60 +327,49 @@ var routeFun = {
 	},
 
 	// 存档
-	archive: function(req, res, next){
-		Publish.getArchive(function(err, docs){
-			if(err){
-				req.flash('error', '读取存档失败！');
-				var docs = [];
-			}
-
-			res.render('archive', {
-				title: '存档首页',
-				success: req.flash('success').toString(),
-				error: req.flash('error').toString(),
-				user: req.session.user,
-				docs: docs
-			});
+	getArchive: function(req, res, next){
+		var cb = routeCallback.renderDocs(req, res, {
+			title: '存档首页',
+			views: 'archive'
 		});
+
+		Publish.getArchive(cb);
 	},
 
 	// 标签页
-	tags: function(req, res, next){
-		Publish.getTags(function(err, tags){
-			if(err){
-				req.flash('error', '读取标签失败！');
-				var tags = [];
-			}
-			// res.flash('success', 'success!');
-			res.render('tags', {
-				title: '所有标签',
-				success: req.flash('success').toString(),
-				error: req.flash('error').toString(),
-				user: req.session.user,
-				tags: tags
-			});
+	getTags: function(req, res, next){
+		// 获取回调
+		var cb = routeCallback.renderDocs(req, res, {
+			title: '所有标签',
+			views: 'tags'
 		});
+
+		Publish.getTags(cb);
 	},
 
 	tagBlogs: function(req, res, next){
 		var tags = [req.params.tag];
 
-		Publish.getBlogsByTags(tags, function(err, blogs){
-			if(err){
-				req.flash('error', '读取指定博客失败！');
-				return res.redirect('back');
-			}
+		var cb = routeCallback.renderDocs(req, res, {
+			title: '包含'+req.params.tag+'标签的博客',
+			views: 'blogs_by_tags'
+		});
 
-			req.flash('success', '读取博客成功！');
-			res.render('blogs_by_tags', {
-				title: '所有博客',
-				success: req.flash('success').toString(),
-				error: req.flash('error').toString(),
-				user: req.session.user,
-				blogs: blogs
-			})
+		Publish.getBlogsByTags(tags, cb);
 
-		})
+	},
+
+	// 搜索
+	getSearch: function(req, res, next){
+		var keyword = req.query.keyword;
+
+		// 获取回调
+		var cb = routeCallback.renderDocs(req, res, {
+			title: '搜索：'+keyword,
+			views: 'search'
+		});
+
+		Publish.search(keyword,  cb);
 	}
 	/* routeFun end */
 };

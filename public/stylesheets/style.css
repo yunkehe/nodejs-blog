@@ -116,3 +116,25 @@ textarea{
 	background: #ebf5f3;
 	background-size: 100% 50%;
 }
+.search{
+	/*border: 0;*/
+	width: 8em;
+	text-align: center;
+	font-size: 1em;
+	margin: 0.5em 0;
+}
+button.search-btn {
+    position: absolute;
+    top: 7px;
+    right: -39px;
+}
+/* 用户头像 */
+.l_head{
+	margin-top: -5em;
+}
+.l_head,
+.r_head{
+	float: right;
+	/*margin-top: -2.5em;*/
+	box-shadow: 0px 1px 4px #888;
+}

@@ -2,14 +2,44 @@ var mongodb = require('./db.js');
 var markdown = require('markdown').markdown;
 var ObjectId = require('mongodb').ObjectId;
 var setting = require('../settings.js');
+var crypto = require('crypto');
 
 // 发表数据
+var queryFun = {
+	// 获取简单信息
+	getDocs: function(query, callback){
+		mongodb.open(function(err, db){
+			if(err) return callback(err);
+
+			db.collection('blogs', function(err, collection){
+				if(err){
+					mongodb.close();
+					return callback(err);	
+				}
+				// 匹配查询
+				collection.find(query, {
+					author: 1,
+					time: 1,
+					title: 1
+				}).sort({
+					time: -1
+				}).toArray(function(err, data){
+					// console.log('--------------------------------------------model get data', data)
+					mongodb.close();
+					if(err) return callback(err);
+					callback(null, data);
+				});
+			});
+		});
+	},
+};
+
 function Publish(data) {
 	this.author = data.author;
 	this.title = data.title;
 	this.article = data.article;
 	this.tags = data.tags;
-
+	this.head = data.head;
 };
 
 Publish.prototype.save = function(callback){
@@ -19,7 +49,8 @@ Publish.prototype.save = function(callback){
 		title: this.title,
 		article: this.article,
 		comments: [],
-		tags: this.tags
+		tags: this.tags,
+		head: this.head
 	};
 
 	// 存储时间
@@ -55,65 +86,58 @@ Publish.prototype.save = function(callback){
 };
 
 // 获取博客内容
-Publish.getAll = function(author, callback){
-	// 打开数据库
-	mongodb.open(function (err, db) {
-		if(err) return callback(err);
-		// 打开文档
-		db.collection('blogs', function(err, collection){
+// Publish.getAll = function(author, callback){
+// 	// 打开数据库
+// 	mongodb.open(function (err, db) {
+// 		if(err) return callback(err);
+// 		// 打开文档
+// 		db.collection('blogs', function(err, collection){
 
-			if(err){
-				mongodb.close();
-				return callback(err);
-			}
+// 			if(err){
+// 				mongodb.close();
+// 				return callback(err);
+// 			}
 
-			var query = {};
-			if(author) query.author = author;
+// 			var query = {};
+// 			if(author) query.author = author;
 
-			collection.find(query)
-			.sort({time: -1})
-			.toArray(function(err, blogs){
-				mongodb.close();
-				if(err) return callback(err);
+// 			collection.find(query)
+// 			.sort({time: -1})
+// 			.toArray(function(err, blogs){
+// 				mongodb.close();
+// 				if(err) return callback(err);
 
-				blogs.forEach(function(blog){
-					blog.article = markdown.toHTML(blog.article);
-				});
+// 				blogs.forEach(function(blog){
+// 					blog.article = markdown.toHTML(blog.article);
+// 				});
 				
-				callback(null, blogs);
-			});
-		});
-	});
-};
+// 				callback(null, blogs);
+// 			});
+// 		});
+// 	});
+// };
 
 // 获取特定标签的所有博客
 Publish.getBlogsByTags = function(tags, callback){
-	mongodb.open(function(err, db){
-		if(err) return callback(err);
-
-		db.collection('blogs', function(err, collection){
-			if(err){
-				mongodb.close();
-				return callback(err);
-			}
-
-			collection.find({
-				tags: {$all: tags}
-			}, {
-				title: 1,
-				author: 1,
-				time: 1
-			}).sort({
-				time: -1
-			}).toArray(function(err, blogs){
-				mongodb.close();
-				if(err) return callback(err);
-				callback(null, blogs);
-			})
-		});
-	});
+	var query = {tags: {$all: tags}};
+	queryFun.getDocs(query, callback);
 };
 
+// 搜索
+Publish.search = function(keyword, callback){
+	var pattern = new RegExp('^.*'+keyword+'.*$', 'i'); 
+	var query = {title: pattern};
+
+	queryFun.getDocs(query, callback);
+	
+};
+
+// 存档
+Publish.getArchive = function(callback){
+	var query = {};
+	queryFun.getDocs({}, callback);
+
+};
 // 获取一篇博客
 Publish.getOne = function(params, callback){
 	mongodb.open(function(err, db){
@@ -257,31 +281,6 @@ Publish.remove = function(params, callback){
 	});
 };
 
-// 存档
-Publish.getArchive = function(callback){
-	mongodb.open(function(err, db){
-		if(err) return callback(err);
-
-		db.collection('blogs', function(err, collection){
-			if(err){
-				mongodb.close();
-				return callback(err);
-			}
-
-			collection.find({}, {
-				author: 1,
-				time: 1,
-				title: 1
-			}).sort({
-				time: -1
-			}).toArray(function(err, docs){
-				mongodb.close();
-				if(err) return callback(err);
-				callback(null, docs);
-			});
-		});
-	});
-};
 
 // 获取标签
 Publish.getTags = function(callback){

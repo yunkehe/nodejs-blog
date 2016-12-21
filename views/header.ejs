@@ -11,6 +11,12 @@
 		<h1><%= title %></h1>
 	</header>
 	<nav>
+		<span>
+			<form action="/search" method="GET">
+				<input type="text" name="keyword" class="search" placeholder="请输入关键字搜索" />
+				<button class="search-btn">GO</button>
+			</form>
+		</span>
 		<span><a title="主页" href="/">主页</a></span>
 		<% if(user){%>
 		<span><a title="发表" href="/publish">发表</a></span>
@@ -22,6 +28,7 @@
 		<% } %>
 		<span><a title="存档" href="/archive">存档</a></span>
 		<span><a title="标签" href="/tags">标签</a></span>
+
 	</nav>
 	<article>
 	<% if(success){%>

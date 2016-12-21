@@ -1,12 +1,12 @@
 <%- include header %>
-<% if(tags.length){ %>
+<% if(data.length){ %>
 <ul class="tags">
-	<% tags.forEach(function(tag){ %>
+	<% data.forEach(function(tag){ %>
 		<li><a href="/tags/<%=tag%>"><%= tag %></a></li>
 	<% }) %>
 </ul>
 <% }else{ %>
-	<p>没有标签！</p>
+	<p>什么也没找到！</p>
 <% } %>
 
 <%- include footer%>
