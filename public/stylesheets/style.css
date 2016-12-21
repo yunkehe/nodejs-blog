@@ -5,6 +5,10 @@ body{
 	padding: 0 2em;
 	font: 14px "KaiTi", "Microsoft Yahei", "Lucida Grande", Helvetica, Arial, sans-serif;
 }
+ul{
+	list-style: none;
+	padding: 0;
+}
 p{
 	line-height: 24px;
 	margin: 1em 0;
@@ -44,6 +48,9 @@ article a:hover{
 	color: #333;
 	text-decoration: underline;
 }
+a:hover{
+	text-decoration: none;
+}
 .info{
 	font-size: 14px;
 }
@@ -64,4 +71,70 @@ a {
 	background-color: #f00;
 	color:#fff;
 	-webkit-transition: color .2s linear;
+}
+textarea{
+	margin: 10px 0;
+}
+/* 分页 */
+.next-page,
+.prev-page{
+	text-decoration: none;
+	padding: .5em 1em;
+	color: #ff0006;
+	font-weight: bold;
+}
+.prev-page{
+	float: left;
+}
+.next-page{
+	float: right;
+}
+.prev-page:hover,
+.next-page:hover{
+	text-decoration: none;
+	background-color: #ff0006;
+	color: #f9f9f9;
+	transition:color .2s linear;
+}
+/* 存档 */
+.archive{
+	list-style: none;
+	line-height: 28px;
+}
+.archive a{
+	margin: 0 5px;
+}
+/* 标签页 */
+.tags{
+	padding: 0;
+}
+.tags li{
+	margin: 0 .5em;
+	float: left;
+	border-radius: 10px;
+	border-radius: .2em .5em;
+	background: #ebf5f3;
+	background-size: 100% 50%;
+}
+.search{
+	/*border: 0;*/
+	width: 8em;
+	text-align: center;
+	font-size: 1em;
+	margin: 0.5em 0;
+}
+button.search-btn {
+    position: absolute;
+    top: 7px;
+    right: -39px;
+}
+/* 用户头像 */
+.l_head{
+	margin-top: -5em;
+}
+.l_head,
+.r_head{
+	float: right;
+	/*margin-top: -2.5em;*/
+	box-shadow: 0px 1px 4px #888;
 }

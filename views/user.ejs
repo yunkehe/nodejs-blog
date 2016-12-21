@@ -1,4 +1,7 @@
 <%- include header %>
+<% if(user.head){ %>
+<a href="/u/<%=user.name%>"><img src="<%=user.head%>" alt="头像" class="l_head" /></a>
+<% } %>
 <% blogs.forEach(function(v){ %>
 	<div class="article-box">
 	<h2><a href="/u/<%=v.author%>/<%=v._id%>%>"><%= v.title %></a></h2>
@@ -9,4 +12,6 @@
 	<p><%- v.article %></p>
 	</div>
 <% }) %>
+
+<%- include pagination %>
 <%- include footer %>

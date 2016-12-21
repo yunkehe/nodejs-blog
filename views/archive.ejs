@@ -1,0 +1,11 @@
+<%- include header %>
+<ul class="archive">
+	<% data.forEach(function(doc, index){ %>
+		<li>
+			<a href="/u/<%=doc.author%>/<%=doc._id%>"><%= doc.title %></a>
+			<a href="/u/<%=doc.author%>"><%= doc.author %></a>
+			<span><%= doc.time.localString %></span>
+		</li>
+	<% }) %>
+</ul>
+<%- include footer %>

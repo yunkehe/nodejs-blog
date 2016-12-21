@@ -1,0 +1,10 @@
+<br>
+<div>
+	<% if(!is_first_page){%>
+	<a class="prev-page" href="?p=<%= page-1 %>">上一页</a>
+	<% } %>
+
+	<% if(!is_last_page){%>
+	<a class="next-page" href="?p=<%= page+1 %>">下一页</a>
+	<% } %>
+</div>

@@ -1,0 +1,11 @@
+<%- include header %>
+<ul class="">
+	<% data.forEach(function(b, index){ %>
+		<li>
+			<a href="/u/<%=b.author%>/<%=b._id%>"><%= b.title %></a>
+			<a href="/u/<%=b.author%>"><%= b.author %></a>
+			<span><%= b.time.localString %></span>
+		</li>
+	<% }) %>
+</ul>
+<%- include footer %>

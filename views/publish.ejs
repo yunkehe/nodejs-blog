@@ -1,8 +1,11 @@
 <%- include header %>
 <form method="post">
-	<label><span>标题:</span><input type="text" name="title" /><br></label>
-	<label for="article">正文</label>
-	<textarea cols="100" rows="20" name="article"></textarea><br>
+	<label><span>标题:</span><input type="text" name="title" maxlength="20" /><br></label>
+	<label for="article">正文:
+	<textarea cols="82" rows="20" name="article"></textarea><br>
+	</label>
+	<label for="tag">标签:<input type="text" name="tags" placeholder="请用英文逗号分隔标签" /></label>
+	<br>
 	<input type="submit" value="发表" />
 </form>
 <%- include footer %>
