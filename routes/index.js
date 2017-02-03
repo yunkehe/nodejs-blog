@@ -37,6 +37,10 @@ var router = function(app){
 	// 包含该标签的所有博客
 	app.get('/tags/:tag', routeFun.tagBlogs);
 
+	// 转载
+	app.get('/reprint/:author/:id', privilege.checkLogin);
+	app.get('/reprint/:author/:id', routeFun.reprint);
+
 	/* 404 */
 	app.use(function(req, res){
 		res.render('404');

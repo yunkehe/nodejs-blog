@@ -4,6 +4,21 @@ var ObjectId = require('mongodb').ObjectId;
 var setting = require('../settings.js');
 var crypto = require('crypto');
 
+// 获取创建时间
+function getCreateTime(){
+	var date = new Date();
+	var time = {
+		year: date.getFullYear(),
+		month: date.getMonth()+1,
+		day: date.getDate(),
+		hour: date.getHours(),
+		minute: date.getMinutes(),
+		localString: date.toLocaleString()
+	};
+
+	return time;
+}
+
 // 发表数据
 var queryFun = {
 	// 获取简单信息
@@ -50,19 +65,22 @@ Publish.prototype.save = function(callback){
 		article: this.article,
 		comments: [],
 		tags: this.tags,
-		head: this.head
+		head: this.head,
+		// 转载信息
+		reprint_info: {}
 	};
 
 	// 存储时间
-	var date = new Date();
-	blog.time = {
-		year: date.getFullYear(),
-		month: date.getMonth()+1,
-		day: date.getDate(),
-		hour: date.getHours(),
-		minute: date.getMinutes(),
-		localString: date.toLocaleString()
-	};
+	// var date = new Date();
+	blog.time = getCreateTime();
+	// blog.time = {
+	// 	year: date.getFullYear(),
+	// 	month: date.getMonth()+1,
+	// 	day: date.getDate(),
+	// 	hour: date.getHours(),
+	// 	minute: date.getMinutes(),
+	// 	localString: date.toLocaleString()
+	// };
 
 	mongodb.open(function(err, db){
 		if(err) return callback(err); 
@@ -167,20 +185,24 @@ Publish.getOne = function(params, callback){
 			// 查询一篇博客
 			collection.findOne(query, function(err, blog){
 				if(err){
-					mongodb.close();
 					return callback(err);	
 				} 
 
-				// 每访问一次增加一次pv统计
-				collection.update({_id: query._id}, {
-					$inc: {pv: 1}
-				}, function(err){
-					mongodb.close();
-					if(err) return callback(err);
-				});
+				// 不增加pv统计
+
+				// if(!params.notAddPv){
+					// 每访问一次增加一次pv统计
+					collection.update({_id: query._id}, {
+						$inc: {pv: 1}
+					}, function(err){
+						mongodb.close();
+						if(err) return callback(err);
+					});
+				// }
 
 				blog.articleS = blog.article;
 				blog.article = markdown.toHTML(blog.article);
+
 				callback(null, blog);
 			})
 		})
@@ -269,13 +291,46 @@ Publish.remove = function(params, callback){
 				return callback(err);
 			}
 
-			collection.remove({
+			// 删除转载信息
+			collection.findOne({
 				_id: ObjectId(params.id)
-			}, {w: 1}, function(err){
-				mongodb.close();
-				if(err) return callback(err);
-				callback(null);
+			}, function(err, blog){
+				if(err){
+					mongodb.close();
+					return callback(err);
+				}
+
+				if(blog.reprint_info.reprint_from){
+					var reprint_from = blog.reprint_info.reprint_from;
+				}
+
+				if(reprint_from){
+					collection.update({
+						_id: ObjectId(reprint_from.id)
+					}, {
+						$pull: {
+							'reprint_info.reprint_to': {
+								author: blog.author,
+								localString: reprint_from.localString
+							}
+						}
+					}, function(err){
+						if(err){
+							mongodb.close();
+							return callback(err);
+						}
+					})
+				}
+
+				collection.remove({
+					_id: ObjectId(params.id)
+				}, {w: 1}, function(err){
+					mongodb.close();
+					if(err) return callback(err);
+					callback(null);
+				});
 			});
+
 
 		});
 	});
@@ -303,5 +358,151 @@ Publish.getTags = function(callback){
 	})
 }
 
+
+// 转载一篇文章
+// 转载来源信息
+// Publish.reprint = function(reprint_from, reprint_to, callback){
+// 	mongodb.open(function(err, db){
+// 		if(err) return callback(err);
+
+// 		db.collection('blogs', function(err, collection){
+// 			if(err){
+// 				mongodb.close();
+// 				return callback(err);
+// 			}
+
+// 			collection.findOne({
+// 				'_id': ObjectId(reprint_from.id)
+// 			}, function(err, blog){
+// 				if(err){
+// 					mongodb.close();
+// 					return callback(err);
+// 				}
+
+// 				var time = getCreateTime();
+// 				reprint_from.localString = time.localString;
+
+// 				var new_blog = {
+// 					author: reprint_to.author,
+// 					time: time,
+// 					article: blog.article,
+// 					title: blog.title.search(/[转载]/) > -1 ? blog.title : '[转载]'+blog.title,
+// 					comments: [],
+// 					pv: 0,
+// 					reprint_info: {reprint_from: reprint_from}
+// 				};
+
+// 				// 存储转载的文档 并返回存储后的文档
+// 				collection.insert(new_blog, {
+// 					safe: true
+// 				}, function(err, blogs){
+// 					mongodb.close();
+// 					if(err){
+// 						return callback(err);	
+// 					} 
+
+// 					// console.log('转载文档存储成功!, blogs.ops[0])
+// 					return callback(err, blogs.ops[0]);
+// 				});
+
+// 				// 更新被转载的原文档
+// 				collection.update({
+// 					_id: ObjectId(reprint_from.id)
+// 				}, {
+// 					$push: {
+// 						"reprint_info.reprint_to": {
+// 							"author": reprint_to.author,
+// 							"title": new_blog.title,
+// 							"localString": reprint_from.localString
+// 						}
+// 					}
+// 				}, function(err){
+// 					if(err){
+// 						mongodb.close();
+// 						return callback(err);
+// 					}
+// 					console.log('被转载文档更新成功!')
+// 				});
+// 			})
+// 		});
+// 	});
+// }
+
+Publish.reprint = function(params, callback){
+	var user = params.user,
+		reprint_from = {
+			author: params.author,
+			id: params.id},
+		reprint_to = {
+			author: user.name,
+			head: user.head
+		};
+
+	mongodb.open(function(err, db){
+		if(err) return callback(err);
+
+		db.collection('blogs', function(err, collection){
+			if(err){
+				mongodb.close();
+				return callback(err);
+			}
+
+			collection.findOne({
+				'_id': ObjectId(reprint_from.id)
+			}, function(err, blog){
+				if(err){
+					mongodb.close();
+					return callback(err);
+				}
+
+				var time = getCreateTime();
+				reprint_from.localString = time.localString;
+
+				var new_blog = {
+					author: reprint_to.author,
+					time: time,
+					article: blog.article,
+					title: blog.title.search(/[转载]/) > -1 ? blog.title : '[转载]'+blog.title,
+					comments: [],
+					pv: 0,
+					reprint_info: {reprint_from: reprint_from}
+				};
+
+				// 存储转载的文档 并返回存储后的文档
+				collection.insert(new_blog, {
+					safe: true
+				}, function(err, blogs){
+					mongodb.close();
+					if(err){
+						return callback(err);	
+					} 
+
+					// console.log('转载文档存储成功!, blogs.ops[0])
+					return callback(err, blogs.ops[0]);
+				});
+
+				// 更新被转载的原文档
+				collection.update({
+					_id: ObjectId(reprint_from.id)
+				}, {
+					$push: {
+						"reprint_info.reprint_to": {
+							"author": reprint_to.author,
+							"title": new_blog.title,
+							"localString": reprint_from.localString
+						}
+					}
+				}, function(err){
+					if(err){
+						mongodb.close();
+						return callback(err);
+					}
+					console.log('被转载文档更新成功!')
+				});
+			})
+		});
+	});
+
+}
 
 module.exports = Publish;

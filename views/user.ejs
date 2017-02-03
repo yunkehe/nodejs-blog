@@ -1,5 +1,5 @@
 <%- include header %>
-<% if(user.head){ %>
+<% if(user && user.head){ %>
 <a href="/u/<%=user.name%>"><img src="<%=user.head%>" alt="头像" class="l_head" /></a>
 <% } %>
 <% blogs.forEach(function(v){ %>

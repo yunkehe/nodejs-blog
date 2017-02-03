@@ -9,6 +9,10 @@
 <p><%= comment.content %></p>
 <% }) %>
 <br>
+<!-- 自己不用给自己留言 -->
+<% if(user && data.author == user.name ){ %>
+<% }else{ %>
+
 <form method="post">
 <textarea name="content" cols="52" rows="5"></textarea>
 <br>
@@ -21,3 +25,5 @@
 <% } %>
 <input type="submit" value="留言" />
 </form>
+
+<% } %>

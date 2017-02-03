@@ -9,6 +9,35 @@ var setting = require('../settings.js');
 // 存储控制
 var upload = multerUtil.array('photos', 4);
 
+// 判断博客是否能够转载
+var ViewHelp = {
+	'blog': function(user, data){
+		data.canReprint = true;
+
+		if(!user || user.name == data.author){
+			data.canReprint = false;
+			return data;
+		}
+
+		if(data.reprint_info.reprint_from != void 0 && 
+			data.reprint_info.reprint_from.author == user.name){
+			data.canReprint = false;
+			return data;
+		}
+
+		if(data.reprint_info.reprint_to != void 0){
+			_.each(data.reprint_info.reprint_to, function(r_to, i){
+				if(r_to.author == user.name){
+					data.canReprint = false;
+					return data;
+				}
+			})
+		}
+
+		return data;
+	}
+}
+
 var routeCallback = {
 	'renderDocs': function(req, res, params){
 		var views = params.views,
@@ -20,9 +49,14 @@ var routeCallback = {
 				req.flash('error', '读取数据失败！');
 				return res.redirect('back');
 			}
+
+			if(ViewHelp[views]){
+				ViewHelp[views](req.session.user, data);
+			}
+
 			// console.log('=================================data', data);
 			req.flash('success', '读取数据成功！');
-			res.render(views, {
+			return res.render(views, {
 				title: params.title,
 				data: data,
 				success: req.flash('success').toString(),
@@ -221,7 +255,7 @@ var routeFun = {
 			}, function (err, blogs, total) {
 				if(err) blogs = [];
 				// renderIndex(blogs);
-				res.render('user', { title: author + '的主页', 
+				return res.render('user', { title: author + '的主页', 
 									user: req.session.user,
 									success: req.flash('success').toString(),
 									error: req.flash('error').toString(),
@@ -370,6 +404,65 @@ var routeFun = {
 		});
 
 		Publish.search(keyword,  cb);
+	},
+
+	reprint2: function(req, res, next){
+		var params = {
+			id: req.params.id,
+			notAddPv: true
+		};
+
+		res.redirect('/');
+		// 获取转载信息
+		Publish.getOne(params, function(err, blog){
+			if(err){
+				req.flash('error', err);
+				// return res.redirect('back');
+			}
+
+			var curUser = req.session.user,
+				reprint_from = {
+					author: blog.author,
+					id: blog._id},
+				reprint_to = {
+					author: curUser.name,
+					head: curUser.head
+				};
+
+			Publish.reprint(reprint_from, reprint_to, function(err, blog){
+				if(err){
+					req.flash('error', err);
+					return res.redirect('back');
+				}
+
+				req.flash('success', '转载成功！');
+				var url = '/u/'+blog.author+'/'+blog._id;
+				console.log('转载后跳转加', url)
+				return res.redirect('/');
+				
+			})
+		});
+	},
+
+	reprint: function(req, res, next){
+		var params = {
+			author: req.params.author,
+			id: req.params.id,
+			user: req.session.user
+		};
+
+		Publish.reprint(params, function(err, blog){
+			if(err){
+				req.flash('error', err);
+				return res.redirect('back');
+			}
+
+			req.flash('success', '转载成功！');
+			var url = '/u/'+blog.author+'/'+blog._id;
+			console.log('转载后跳转', url)
+			return res.redirect(url);
+			
+		})
 	}
 	/* routeFun end */
 };
