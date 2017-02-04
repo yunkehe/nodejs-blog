@@ -13,7 +13,7 @@ User.prototype.save = function(callback) {
 		email_MD5 = md5.update(this.email.toLowerCase()).digest('hex'),
 		head = 'http://www.gravatar.com/avatar/'+email_MD5+'?s=48';
 	
-	console.log('=========================================注册头像', head);
+	// console.log('=========================================注册头像', head);
 	var user = {
 		name: this.name,
 		password: this.password,
@@ -37,14 +37,14 @@ User.prototype.save = function(callback) {
 			// 将用户插入user集合
 			collection.insert(user, {
 				safe: true
-			}, function(err, user){
+			}, function(err, results){
 				mongodb.close();
 
 				if(err){
 					return callback(err);
 				}
 
-				callback(null, user);
+				callback(null, results.ops[0]);
 			})
 		})
 	})

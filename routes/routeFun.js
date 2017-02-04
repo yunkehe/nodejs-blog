@@ -295,7 +295,7 @@ var routeFun = {
 		});
 
 		m_comment.save(function(err){
-			console.log('=========================是否保存成功', err)
+			// console.log('=========================是否保存成功', err)
 			if(err){
 				req.flash('error', '保存失败！');
 				return res.redirect('back');
@@ -404,44 +404,6 @@ var routeFun = {
 		});
 
 		Publish.search(keyword,  cb);
-	},
-
-	reprint2: function(req, res, next){
-		var params = {
-			id: req.params.id,
-			notAddPv: true
-		};
-
-		res.redirect('/');
-		// 获取转载信息
-		Publish.getOne(params, function(err, blog){
-			if(err){
-				req.flash('error', err);
-				// return res.redirect('back');
-			}
-
-			var curUser = req.session.user,
-				reprint_from = {
-					author: blog.author,
-					id: blog._id},
-				reprint_to = {
-					author: curUser.name,
-					head: curUser.head
-				};
-
-			Publish.reprint(reprint_from, reprint_to, function(err, blog){
-				if(err){
-					req.flash('error', err);
-					return res.redirect('back');
-				}
-
-				req.flash('success', '转载成功！');
-				var url = '/u/'+blog.author+'/'+blog._id;
-				console.log('转载后跳转加', url)
-				return res.redirect('/');
-				
-			})
-		});
 	}
 	/* routeFun end */
 };
