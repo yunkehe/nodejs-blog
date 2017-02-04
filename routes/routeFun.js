@@ -442,27 +442,6 @@ var routeFun = {
 				
 			})
 		});
-	},
-
-	reprint: function(req, res, next){
-		var params = {
-			author: req.params.author,
-			id: req.params.id,
-			user: req.session.user
-		};
-
-		Publish.reprint(params, function(err, blog){
-			if(err){
-				req.flash('error', err);
-				return res.redirect('back');
-			}
-
-			req.flash('success', '转载成功！');
-			var url = '/u/'+blog.author+'/'+blog._id;
-			console.log('转载后跳转', url)
-			return res.redirect(url);
-			
-		})
 	}
 	/* routeFun end */
 };

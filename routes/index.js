@@ -38,8 +38,8 @@ var router = function(app){
 	app.get('/tags/:tag', routeFun.tagBlogs);
 
 	// 转载
-	app.get('/reprint/:author/:id', privilege.checkLogin);
-	app.get('/reprint/:author/:id', routeFun.reprint);
+	// app.get('/reprint/:author/:id', privilege.checkLogin);
+	// app.get('/reprint/:author/:id', routeFun.reprint);
 
 	/* 404 */
 	app.use(function(req, res){

@@ -8,22 +8,12 @@
 	</p>
 	<% } %>
 	
-	<% if(data.canReprint){%>
-		<a href="/reprint/<%= data.author %>/<%= data._id %>" class="edit">转载</a>
-	<% } %>
-	
 	<h2><a href="#"><%= data.title %></a></h2>
 	<p class="info">
 		<span>作者：</span><a href="/u/<%= data.author %>"><%= data.author %></a> |
 		<span>时间：</span><span><%= data.time.localString %></span> |
 		<span>阅读：</span><em><%= data.pv || 0 %></em> |
 		<span>留言：</span><em><%= data.comments.length || 0 %></em>
-		<span>转载：</span><em><%if(data.reprint_info && data.reprint_info.reprint_to){ %>
-				<%= data.reprint_info.reprint_to.length %>
-			<% }else{ %>
-			<%= 0 %>
-			<% } %>
-		%></em>
 	</p>
 	<p><%- data.article %></p>
 	</div>
